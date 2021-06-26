@@ -59,9 +59,6 @@ class BlogPost(db.Model):
     body = db.Column(db.Text, nullable=False)
     img_url = db.Column(db.String(250), nullable=False)
    
-
-
-
 class Comment(db.Model):
     __tablename__= "comments"
     id = db.Column(db.Integer,primary_key=True)
@@ -149,13 +146,14 @@ def login():
         password = form.password.data
         user = User.query.filter_by(email = email).first()
         # Email doesn't exist or password incorrect.
-        if not check_password_hash(user.password, password):
-            flash('Password Incorrect!Try Again!')
-            return redirect(url_for('login'))
-        elif not user: 
+        if not user: 
             flash('The email does not exists!Try Again!')
             return redirect(url_for('login'))
+        elif not check_password_hash(user.password, password):
+            flash('Password Incorrect!Try Again!')
+            return redirect(url_for('login'))
         else:
+            #This line will authenticate the user with Flask-Login
             login_user(user)
             return redirect(url_for('get_all_posts'))
     return render_template("login.html", form=form)
@@ -180,8 +178,6 @@ def show_post(post_id):
             comment_author=current_user, #<User 2>, <class '__main__.BlogPost'>
             parent_host=requested_post #<BlogPost 1>, <class 'werkzeug.local.LocalProxy'>
             )
-        print(type(requested_post))
-        print(type(current_user))
         db.session.add(new_comment)
         db.session.commit()    
     return render_template("post.html", post=requested_post,form = form)
